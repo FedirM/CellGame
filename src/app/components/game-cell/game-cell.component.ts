@@ -10,7 +10,7 @@ import { GameCellInput, GameCellResultEvent } from 'src/app/interfaces/game-cell
 export class GameCellComponent implements AfterViewInit{
 
   @Input() data: GameCellInput;
-  @Output() onClick = new EventEmitter<GameCellResultEvent>();
+  @Output() onResult = new EventEmitter<GameCellResultEvent>();
 
   constructor(){}
 
