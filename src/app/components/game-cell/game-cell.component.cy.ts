@@ -1,13 +1,28 @@
-import { createOutputSpy } from 'cypress/angular';
+import { Component } from '@angular/core';
 import { GameCellComponent } from './game-cell.component';
-import { GameCellInput, GameCellResultEvent } from 'src/app/interfaces/game-cell.interface';
+import { GameCellStatus, GameCellInput, GameCellResultEvent } from 'src/app/interfaces/game-cell.interface';
+
+const defaultColor  = 'rgb(19, 78, 151)';
+const activeColor   = 'rgb(203, 141, 26)';
+const userColor     = 'rgb(23, 95, 26)';
+const computerColor = 'rgb(188, 42, 13)';
+
+const DEFAULT_INPUT = {
+  id: 1,
+  status: GameCellStatus.Inactive,
+  duration: 300
+};
+
+const INPUT_ACTIVE: GameCellInput = {
+  id: 1,
+  status: GameCellStatus.Active,
+  duration: 100
+};
+
 
 describe('GameCellComponent', () => {
 
-  const defaultColor  = 'rgb(19, 78, 151)';
-  const activeColor   = 'rgb(203, 141, 26)';
-  const userColor     = 'rgb(23, 95, 26)';
-  const computerColor = 'rgb(188, 42, 13)';
+
 
   before(() => {
     const style = document.documentElement.style;
@@ -15,41 +30,26 @@ describe('GameCellComponent', () => {
     style.setProperty('--active-cell-color', activeColor);
     style.setProperty('--user-cell-color', userColor);
     style.setProperty('--computer-cell-color', computerColor);
-
-    const compStyle = getComputedStyle(document.documentElement);
-    console.log('DEFAULT: ', compStyle.getPropertyValue('--default-cell-color'));
   })
 
   it('should mount', () => {
-    cy.mount(GameCellComponent)
+    cy.mount(GameCellComponent, {
+      componentProperties: {data: {...DEFAULT_INPUT}},
+    })
   });
 
   it('should contain "div" element', () => {
-    cy.mount(GameCellComponent)
-    cy.get('div').should('be.visible');
+    cy.mount(GameCellComponent, {
+      componentProperties: {data: {...DEFAULT_INPUT}},
+    })
+    cy.get('[data-cy="cell"]').should('be.visible');
   });
 
-  describe('Behavior (inactive) test', () => {
 
-    const INPUT_INACTIVE: GameCellInput = {
-      id: 1,
-      isActive: false,
-      duration: 300
-    }
 
-    it('should be blue by default', () => {
-      cy.mount(GameCellComponent, { componentProperties: {data: INPUT_INACTIVE}})
-      cy.get('div').should('have.css', 'background-color', defaultColor)
-    })
 
-  })
-
-  describe('Behavior (active) tests', () => {
-    const INPUT_ACTIVE: GameCellInput = {
-      id: 1,
-      isActive: true,
-      duration: 300
-    };
+  describe('Behavior tests', () => {
+    
 
     const SUCCESS: GameCellResultEvent = {
       id: 1,
@@ -61,30 +61,45 @@ describe('GameCellComponent', () => {
       result: false
     };
     
-    
     beforeEach(() => {
-      cy.mount(GameCellComponent, { componentProperties: {data: INPUT_ACTIVE} })
+      console.log('Before each');
+      cy.clock();
+      cy.mount(GameCellComponent, { componentProperties: {data: {...INPUT_ACTIVE}} })
       .then(response => {
         cy.spy(response.component.onResult, 'emit').as('onResultSpy');
       });
     })
 
-    it('should be orange while active', () => {
-      cy.get('div', { timeout: (INPUT_ACTIVE.duration / 3) })
-        .should('have.css', 'background-color', activeColor)
-    })
+    afterEach(() => {
+      cy.clock().then(clock => clock.restore());
+    });
 
-    it('should be green if user hitted in timing', () => {
-      cy.get('div', { timeout: 40 })
-        .click()
-        .should('have.css', 'background-color', userColor)
-    })
+    it('should be blue by default', () => {
+      cy.mount(GameCellComponent, {
+        componentProperties: {data: DEFAULT_INPUT},
+      })
+      cy.get('[data-cy="cell"]').should('have.css', 'background-color', defaultColor);
+    });
+
+    it('should be orange while active', () => {
+      cy.get('[data-cy="cell"]')
+        .should('have.css', 'background-color', activeColor);
+    });
 
     it('should be red if user missed the timing', () => {
-      cy.get('div', { timeout: INPUT_ACTIVE.duration + 10 })
+      const waiting = INPUT_ACTIVE.duration + 1000;
+      cy.tick(waiting)
+        .get('[data-cy="cell"]')
         .click()
-        .should('have.css', 'background-color', computerColor)
-    })
+        .should('have.css', 'background-color', computerColor);
+    });
+
+    it('should be green if user hitted in timing', () => {
+      cy.tick(INPUT_ACTIVE.duration / 3)
+        .get('[data-cy="cell"]')
+        .click()
+        .should('have.css', 'background-color', userColor);
+    });
 
   });
 })
