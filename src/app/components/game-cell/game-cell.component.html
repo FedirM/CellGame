@@ -1,1 +1,6 @@
-<p>game-cell works!</p>
+<div
+(click)="onClick()"
+[ngClass]="{'cell-active': isActive(), 'cell-user': isUserOwner(), 'cell-computer': isComputerOwner()}"
+class="cell"
+data-cy="cell"
+></div>

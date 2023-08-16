@@ -1,7 +1,14 @@
 
+export enum GameCellStatus {
+    Inactive,
+    Active,
+    User,
+    Computer
+}
+
 export interface GameCellInput {
     id: number;
-    isActive: boolean;
+    status: GameCellStatus;
     duration: number;
 }
 

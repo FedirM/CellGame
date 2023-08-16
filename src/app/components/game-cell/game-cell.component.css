@@ -1,0 +1,25 @@
+
+.cell{
+    width: var(--cell-size);
+    height: var(--cell-size);
+    position: relative;
+    display: block;
+
+    background-color: var(--default-cell-color);
+    box-shadow: 0 0 var(--cell-box-shadow-size) 0 var(--default-cell-color);
+}
+
+.cell-active {
+    background-color: var(--active-cell-color);
+    box-shadow: 0 0 var(--cell-box-shadow-size) 0 var(--active-cell-color);
+}
+
+.cell-user {
+    background-color: var(--user-cell-color);
+    box-shadow: 0 0 var(--cell-box-shadow-size) 0 var(--user-cell-color);
+}
+
+.cell-computer {
+    background-color: var(--computer-cell-color);
+    box-shadow: 0 0 var(--cell-box-shadow-size) 0 var(--computer-cell-color);
+}
