@@ -19,7 +19,6 @@ export class GameCellComponent implements OnChanges{
   constructor(){}
 
   ngOnChanges(): void {
-    console.log('New data: ', this.data);
     if(this.data.status === GameCellStatus.Active) {
       this.start = Date.now();
     }

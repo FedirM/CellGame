@@ -44,3 +44,8 @@
     grid-column-gap: 2px;
     grid-row-gap: 2px;
 }
+
+.disabled {
+    background-color: rgb(82, 82, 82) !important;
+    color: white !important;
+}

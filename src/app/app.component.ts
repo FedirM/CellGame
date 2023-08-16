@@ -1,8 +1,9 @@
-import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, ViewChild, OnInit, OnDestroy, signal } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { GameCellInput, GameCellResultEvent, GameCellStatus } from './interfaces/game-cell.interface';
 import { Score } from './interfaces/score.interface';
 import { Subject, takeUntil } from 'rxjs';
+import { ModalComponent } from './components/modal/modal.component';
 
 
 @Component({
@@ -11,25 +12,25 @@ import { Subject, takeUntil } from 'rxjs';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit, OnDestroy {
+
+  @ViewChild('modalPlayer') modalPlayer: ModalComponent;
+  @ViewChild('modalComputer') modalComputer: ModalComponent;
+
   private onDestroy$ = new Subject();
   private _randomIndecies: Array<number>;
   private _currentIndex = signal(0);
   private _defaultDuration = 1500;
+  private _maxPoints = 10;
 
   inputForm: FormControl; 
   
   score = signal<Score>({player: 0, computer: 0});
+  gameInProgress = signal<boolean>(false);
   cellList = new Array<GameCellInput>(100);
 
   constructor() {
     //Default initialisation
-    for(let i = 0; i < this.cellList.length; i++){
-      this.cellList[i] = {
-        id: i,
-        status: GameCellStatus.Inactive,
-        duration: this._defaultDuration
-      }
-    }
+    this.resetGame();
   }
 
   ngOnInit(): void {
@@ -50,7 +51,9 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   onStart(): void {
-    console.log('OnStart');
+    console.log('click');
+    this.gameInProgress.set(true);
+    this.inputForm.disable();
     this.resetRandomIndecies();
     this.gameTick();
   }
@@ -64,9 +67,12 @@ export class AppComponent implements OnInit, OnDestroy {
       }
     });
 
-    if(this.score().computer === 10 || this.score().player === 10) {
-      console.log('END GAME');
-      // TODO: call modal
+    if(this.score().computer === this._maxPoints) {
+      this.resetGame();
+      this.modalComputer.open();
+    } else if(this.score().player === this._maxPoints) {
+      this.resetGame();
+      this.modalPlayer.open();
     } else {
       this.cellList[result.id].status = (result.result) ? GameCellStatus.User : GameCellStatus.Computer;
       this.gameTick();
@@ -81,6 +87,18 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
+  private resetGame(): void {
+    this.score.set({computer: 0, player: 0});
+    this.gameInProgress.set(false);
+    for(let i = 0; i < this.cellList.length; i++){
+      this.cellList[i] = {
+        id: i,
+        status: GameCellStatus.Inactive,
+        duration: this._defaultDuration
+      }
+    }
+  }
+
   private resetRandomIndecies(): void {
     this._randomIndecies = [];
     let tmp = 0;
@@ -89,13 +107,10 @@ export class AppComponent implements OnInit, OnDestroy {
       if(this._randomIndecies.indexOf(tmp) === -1) this._randomIndecies.push(tmp);
     }
     this._currentIndex.set(0);
-    console.log('Reset: ', this._randomIndecies);
   }
 
   private getRandomCellId(): number {
     const id = this._randomIndecies[this._currentIndex()];
-    console.log('GET ID: ', this._currentIndex());
-    console.log('RAND : ', id);
     this._currentIndex.update(v => v + 1);
     return id;
   }

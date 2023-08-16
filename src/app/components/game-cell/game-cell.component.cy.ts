@@ -45,11 +45,7 @@ describe('GameCellComponent', () => {
     cy.get('[data-cy="cell"]').should('be.visible');
   });
 
-
-
-
-  describe('Behavior tests', () => {
-    
+  describe('Event tests', () => {
 
     const SUCCESS: GameCellResultEvent = {
       id: 1,
@@ -61,6 +57,35 @@ describe('GameCellComponent', () => {
       result: false
     };
     
+    beforeEach(() => {
+      console.log('Before each');
+      cy.clock();
+      cy.mount(GameCellComponent, { componentProperties: {data: {...INPUT_ACTIVE}} })
+      .then(response => {
+        cy.spy(response.component.onResult, 'emit').as('onResultSpy');
+      });
+    })
+
+    it('should be failure if user missed the timing', () => {
+      const waiting = INPUT_ACTIVE.duration + 1000;
+      cy.tick(waiting)
+        .get('[data-cy="cell"]')
+        .click()
+        .get('@onResultSpy')
+        .should('have.been.calledWith', {...FAILURE})
+    });
+
+    it('should be success if user hitted in timing', () => {
+      cy.tick(INPUT_ACTIVE.duration / 3)
+        .get('[data-cy="cell"]')
+        .click()
+        .get('@onResultSpy')
+        .should('have.been.calledWith', {...SUCCESS})
+    });
+  })
+
+
+  describe('Behavior tests', () => {
     beforeEach(() => {
       console.log('Before each');
       cy.clock();

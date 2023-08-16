@@ -1,7 +1,7 @@
 <div class="app-layout">
   <div class="app-form">
-    <input [formControl]="inputForm" type="number" class="app-form-input" />
-    <button (click)="onStart()" class="app-form-btn">START</button>
+    <input [disabled]="gameInProgress()" [formControl]="inputForm" type="number" class="app-form-input" />
+    <button [disabled]="gameInProgress()" [ngClass]="{'disabled': gameInProgress()}" (click)="onStart()" class="app-form-btn">START</button>
   </div>
   <div class="app-score">
     <app-score [score]="score()"></app-score>
@@ -14,3 +14,10 @@
     ></app-game-cell>
   </div>
 </div>
+
+<app-modal #modalPlayer>
+  <h3 [ngStyle]="{'color': 'green', 'font-size': '2.1rem'}">You won!</h3>
+</app-modal>
+<app-modal #modalComputer>
+  <h3 [ngStyle]="{'color': 'red', 'font-size': '2.1rem'}">Computer won!</h3>
+</app-modal>
